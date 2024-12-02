@@ -64,7 +64,7 @@ def is_user_exists(user_id: int) -> bool:
 def change_user_name(user_id: int, new_initials: list) -> None:
     connection = sq.connect('chats.db')
     cursor = connection.cursor()
-    cursor.execute("UPDATE users SET surname = ?, name = ?, middle_name = ? WHERE user_id = ?", (*new_initials, user_id))
+    cursor.execute("UPDATE users SET surname = ?, name = ?, middle_name = ? WHERE telegram_id = ?", (*new_initials, user_id))
     connection.commit()
     cursor.close()
     connection.close()
