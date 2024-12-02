@@ -1,4 +1,5 @@
 import sqlite3 as sq
+import time
 
 
 def add_admin(user_id: int, chat_name: str):
@@ -13,7 +14,7 @@ def add_admin(user_id: int, chat_name: str):
 def chat_cheker(user_id: int, chat_name: str):
     connection = sq.connect('chats.db')
     cursor = connection.cursor()
-    a = cursor.execute("SELECT admin_id, chat_name from admins WHERE admin_id = ? AND chat_name = ?", (user_id, chat_name))
+    a = cursor.execute("SELECT admin_id, chat_name FROM admins WHERE admin_id = ? AND chat_name = ?", (user_id, chat_name))
     ans = (len(a.fetchall()) != 0)
     cursor.close()
     connection.close()
@@ -42,23 +43,41 @@ def add_members(chat_name: str, admin_id: int, members: str):
 
 
 def add_user(user_id: int, initials: list):
-    pass
+    connection = sq.connect('chats.db')
+    cursor = connection.cursor()
+    cursor.execute("INSERT INTO users (telegram_id, surname, name, middle_name) VALUES (?, ?, ?, ?)", (user_id, *initials))
+    connection.commit()
+    cursor.close()
+    connection.close()
 
 
 def is_user_exists(user_id: int) -> bool:
-    return True
+    connection = sq.connect('chats.db')
+    cursor = connection.cursor()
+    a = cursor.execute("SELECT user_id FROM users WHERE user_id = ?", (user_id, ))
+    ans = (len(a.fetchall()) != 0)
+    cursor.close()
+    connection.close()
+    return ans
 
 
 def change_user_name(user_id: int, new_initials: list):
-    pass
-
-
-def is_registered(user_id: int) -> bool:
-    return True
+    connection = sq.connect('chats.db')
+    cursor = connection.cursor()
+    cursor.execute("UPDATE users SET surname = ?, name = ?, middle_name = ? WHERE user_id = ?", (*new_initials, user_id))
+    connection.commit()
+    cursor.close()
+    connection.close()
 
 
 def add_chat_user(user_id: int, chat_id: int):
-    pass
+    connection = sq.connect('chats.db')
+    cursor = connection.cursor()
+    cursor.execute("INSERT INTO users_and_chats (user_id, chat_id, start_time) VALUES (?, ?, ?)", (user_id, chat_id, int(time.time())))
+    connection.commit()
+    cursor.close()
+    connection.close()
+
 
 
 def get_start_time(user_id, chat_id):
