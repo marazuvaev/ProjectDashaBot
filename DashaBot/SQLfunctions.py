@@ -54,7 +54,7 @@ def add_user(user_id: int, initials: list):
 def is_user_exists(user_id: int) -> bool:
     connection = sq.connect('chats.db')
     cursor = connection.cursor()
-    a = cursor.execute("SELECT user_id FROM users WHERE user_id = ?", (user_id, ))
+    a = cursor.execute("SELECT telegram_id FROM users WHERE telegram_id = ?", (user_id, ))
     ans = (len(a.fetchall()) != 0)
     cursor.close()
     connection.close()
