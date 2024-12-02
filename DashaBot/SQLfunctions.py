@@ -77,7 +77,10 @@ def add_chat_user(user_id: int, chat_id: int):
     connection.commit()
     cursor.close()
     connection.close()
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4581e64d9aeb649ac62b80e0f681cbd2a936908f
 
 
 def get_start_time(user_id, chat_id):
