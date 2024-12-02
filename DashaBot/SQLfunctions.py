@@ -4,7 +4,7 @@ import sqlite3 as sq
 def add_admin(user_id: int, chat_name: str):
     connection = sq.connect('chats.db')
     cursor = connection.cursor()
-    cursor.execute("INSERT INTO admins (admin_id, chat_id) VALUES (?, ?)", (user_id, chat_name))
+    cursor.execute("INSERT INTO admins (admin_id, chat_name) VALUES (?, ?)", (user_id, chat_name))
     connection.close()
     cursor.close()
 
