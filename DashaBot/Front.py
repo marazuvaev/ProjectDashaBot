@@ -97,8 +97,8 @@ def welcome_new_member(message):
                 return
 
             member_count = bot.get_chat_members_count(chat_id)
-            for user_id in range(1, member_count + 1):
-                member = bot.get_chat_member(chat_id, user_id)
+            for id in range(1, member_count + 1):
+                member = bot.get_chat_member(chat_id, id)
                 if member.user.id == bot.get_me().id:
                     continue
                 if member.user.id == user_id:
