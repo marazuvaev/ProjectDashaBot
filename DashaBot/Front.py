@@ -72,6 +72,11 @@ def save_user_name(message):
 
 
 @bot.message_handler(func=lambda message: message.text == "сменить ФИО")
+def change_user_name_start(message):
+    bot.send_message(message.from_user.id, "Введите ФИО:")
+    bot.register_next_step_handler(message, change_user_name)
+
+
 def change_user_name(message):
     fio = message.text.split()
     if not SQLfunctions.is_user_exists(message.from_user.id):
