@@ -51,3 +51,15 @@ def is_user_exists(user_id: int) -> bool:
 
 def change_user_name(user_id: int, new_initials: list):
     pass
+
+
+def is_registered(user_id: int) -> bool:
+    return True
+
+
+def add_chat_user(user_id: int, chat_id: int):
+    pass
+
+
+def get_start_time(user_id, chat_id):
+    pass
