@@ -2,7 +2,7 @@ import sqlite3 as sq
 import time
 
 
-def add_admin(user_id: int, chat_name: str):
+def add_admin(user_id: int, chat_name: str) -> None:
     connection = sq.connect('chats.db')
     cursor = connection.cursor()
     cursor.execute("INSERT INTO admins (admin_id, chat_name) VALUES (?, ?)", (user_id, chat_name))
@@ -11,7 +11,7 @@ def add_admin(user_id: int, chat_name: str):
     connection.close()
 
 
-def chat_cheker(user_id: int, chat_name: str):
+def chat_cheker(user_id: int, chat_name: str) -> bool:
     connection = sq.connect('chats.db')
     cursor = connection.cursor()
     a = cursor.execute("SELECT admin_id, chat_name FROM admins WHERE admin_id = ? AND chat_name = ?", (user_id, chat_name))
@@ -21,7 +21,7 @@ def chat_cheker(user_id: int, chat_name: str):
     return ans
 
 
-def add_chat_to_db(chat_name: str, chat_id: int, admin_id: int):
+def add_chat_to_db(chat_name: str, chat_id: int, admin_id: int) -> None:
     connection = sq.connect('chats.db')
     cursor = connection.cursor()
     cursor.execute("DELETE FROM chats WHERE telegram_id = ?", (chat_id,))
@@ -33,7 +33,7 @@ def add_chat_to_db(chat_name: str, chat_id: int, admin_id: int):
     connection.close()
 
 
-def add_members(chat_name: str, admin_id: int, members: str):
+def add_members(chat_name: str, admin_id: int, members: str) -> None:
     connection = sq.connect('chats.db')
     cursor = connection.cursor()
     cursor.execute("UPDATE chats SET users_names = ? WHERE admin_id = ? AND chat_name = ?", (members, admin_id, chat_name))
@@ -42,7 +42,7 @@ def add_members(chat_name: str, admin_id: int, members: str):
     connection.close()
 
 
-def add_user(user_id: int, initials: list):
+def add_user(user_id: int, initials: list) -> None:
     connection = sq.connect('chats.db')
     cursor = connection.cursor()
     cursor.execute("INSERT INTO users (telegram_id, surname, name, middle_name) VALUES (?, ?, ?, ?)", (user_id, *initials))
@@ -61,7 +61,7 @@ def is_user_exists(user_id: int) -> bool:
     return ans
 
 
-def change_user_name(user_id: int, new_initials: list):
+def change_user_name(user_id: int, new_initials: list) -> None:
     connection = sq.connect('chats.db')
     cursor = connection.cursor()
     cursor.execute("UPDATE users SET surname = ?, name = ?, middle_name = ? WHERE user_id = ?", (*new_initials, user_id))
@@ -70,7 +70,7 @@ def change_user_name(user_id: int, new_initials: list):
     connection.close()
 
 
-def add_chat_user(user_id: int, chat_id: int):
+def add_chat_user(user_id: int, chat_id: int) -> None:
     connection = sq.connect('chats.db')
     cursor = connection.cursor()
     cursor.execute("INSERT INTO users_and_chats (user_id, chat_id, start_time) VALUES (?, ?, ?)", (user_id, chat_id, int(time.time())))
@@ -79,5 +79,10 @@ def add_chat_user(user_id: int, chat_id: int):
     connection.close()
 
 
-def get_start_time(user_id, chat_id):
-    pass
+def get_start_time(user_id, chat_id) -> int:
+    connection = sq.connect('chats.db')
+    cursor = connection.cursor()
+    a = cursor.execute("SELECT start_time FROM users_and_chats WHERE user_id = ? AND chat_id = ?", (user_id, chat_id)).fetchone()
+    cursor.close()
+    connection.close()
+    return a[0]
