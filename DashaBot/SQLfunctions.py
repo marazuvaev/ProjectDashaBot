@@ -1,27 +1,25 @@
 import sqlite3 as sq
 
-global cursor
-
-cursor = None
-
-
-def start_connection():
-    global cursor
-    if (cursor is None):
-        connection = sq.connect('chats.db')
-        cursor = connection.cursor()
-
 
 def add_admin(user_id: int, chat_name: str):
-    global cursor
-    start_connection()
-    #cursor.execute("INSERT INTO admins (admin_id, chat_id) VALUES (?, ?)", (user_id, chat_name))
+    connection = sq.connect('chats.db')
+    cursor = connection.cursor()
+    cursor.execute("INSERT INTO admins (admin_id, chat_id) VALUES (?, ?)", (user_id, chat_name))
+    connection.close()
+    cursor.close()
 
 
 def chat_cheker(user_id: int, chat_name: str):
-    start_connection()
-    return True
+    connection = sq.connect('chats.db')
+    cursor = connection.cursor()
+    a = cursor.execute("SELECT (admin_id, chat_name) WHERE admin_id = ? AND chat_name = ?", (user_id, chat_name))
+    connection.close()
+    cursor.close()
+    return len(a.fetchall()) != 0
 
 
-def add_chat_to_db(chat_id: int, admin_id: int, user_names: str):
-    start_connection()
+def add_chat_to_db(chat_name: str, chat_id: int, admin_id: int):
+    connection = sq.connect('chats.db')
+    cursor = connection.cursor()
+    connection.close()
+    cursor.close()
