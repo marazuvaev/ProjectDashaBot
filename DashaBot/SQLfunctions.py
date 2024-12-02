@@ -9,7 +9,7 @@ def start_connection():
     global cursor
     if (cursor is None):
         connection = sq.connect('chats.db')
-        cursor = connection.cursor
+        cursor = connection.cursor()
 
 
 def add_admin(user_id: int, chat_name: str):
