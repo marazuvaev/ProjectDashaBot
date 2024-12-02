@@ -12,7 +12,7 @@ def add_admin(user_id: int, chat_name: str):
 def chat_cheker(user_id: int, chat_name: str):
     connection = sq.connect('chats.db')
     cursor = connection.cursor()
-    a = cursor.execute("SELECT (admin_id, chat_name) WHERE admin_id = ? AND chat_name = ?", (user_id, chat_name))
+    a = cursor.execute("SELECT (admin_id, chat_name) from admins WHERE admin_id = ? AND chat_name = ?", (user_id, chat_name))
     cursor.close()
     connection.close()
     return len(a.fetchall()) != 0
