@@ -90,22 +90,14 @@ def welcome_new_member(message):
         if new_member.id == bot.get_me().id:
             if SQLfunctions.chat_cheker(user_id, chat_name):
                 SQLfunctions.add_chat_to_db(chat_name, chat_id, user_id)
-                bot.send_message(chat_id, f"Привет! Вот ссылка для регистрации участника чата:{link}")
             else:
                 bot.send_message(chat_id, f"Извините, не знаю такого чата")
                 bot.leave_chat(chat_id)
                 return
-
-            member_count = bot.get_chat_members_count(chat_id)
-            for id in range(1, member_count + 1):
-                member = bot.get_chat_member(chat_id, id)
-                if member.user.id == bot.get_me().id:
-                    continue
-                if member.user.id == user_id:
-                    continue
-                SQLfunctions.add_chat_user(member.user.id, chat_id)
         else:
             SQLfunctions.add_chat_user(new_member.id, chat_id)
+            bot.send_message(chat_id, f"Привет! Вот ссылка для регистрации участника чата:{link}")
+
 
 
 @bot.polling(none_stop=True)
