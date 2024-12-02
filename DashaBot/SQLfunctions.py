@@ -21,9 +21,10 @@ def chat_cheker(user_id: int, chat_name: str):
 def add_chat_to_db(chat_name: str, chat_id: int, admin_id: int):
     connection = sq.connect('chats.db')
     cursor = connection.cursor()
-    cursor.execute("IN")
+    cursor.execute("INSERT INTO chats (telegram)")
     connection.close()
     cursor.close()
 
-def add_members(chat_name: str, admin_name: str):
+
+def add_members(chat_name: str, admin_id: int, members: str):
     pass
