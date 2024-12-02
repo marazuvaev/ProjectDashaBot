@@ -33,3 +33,15 @@ def add_chat_to_db(chat_name: str, chat_id: int, admin_id: int):
 
 def add_members(chat_name: str, admin_id: int, members: str):
     pass
+
+
+def add_user(user_id: int, initials: list):
+    pass
+
+
+def is_user_exists(user_id: int) -> bool:
+    return True
+
+
+def change_user_name(user_id: int, new_initials: list):
+    pass
