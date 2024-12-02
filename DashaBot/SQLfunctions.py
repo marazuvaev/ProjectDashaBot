@@ -15,7 +15,7 @@ def start_connection():
 def add_admin(user_id: int, chat_name: str):
     global cursor
     start_connection()
-    cursor.execute("INSERT INTO admins (admin_id, chat_id) VALUES (?, ?)", (user_id, chat_name))
+    #cursor.execute("INSERT INTO admins (admin_id, chat_id) VALUES (?, ?)", (user_id, chat_name))
 
 
 def chat_cheker(user_id: int, chat_name: str):
