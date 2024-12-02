@@ -52,7 +52,6 @@ def save_chat(message, chat_name):
 
 
 
-
 @bot.message_handler(func=lambda message: message.text == "Зарегистрироваться для существующего чата")
 def start_registration(message):
     if SQLfunctions.is_user_exists(message.from_user.id):
@@ -60,7 +59,7 @@ def start_registration(message):
         btn = types.KeyboardButton("сменить ФИО")
         markup.add(btn)
         bot.send_message(message.from_user.id, "Вы уже зарегистрированы", reply_markup=markup)
-        bot.register_next_step_handler(message, change_user_name)
+        return
     bot.send_message(message.from_user.id, "Введите ФИО:")
     bot.register_next_step_handler(message, save_user_name)
 
@@ -71,8 +70,13 @@ def save_user_name(message):
     bot.send_message(message.from_user.id, "Вы успешно зарегистрированы")
 
 
+
+@bot.message_handler(func=lambda message: message.text == "сменить ФИО")
 def change_user_name(message):
     fio = message.text.split()
+    if not SQLfunctions.is_user_exists(message.from_user.id):
+        bot.send_message(message.from_user.id, "Вы еще не зарегистрированы", reply_markup=start_menu())
+        return
     SQLfunctions.change_user_name(message.from_user.id, fio)
     bot.send_message(message.from_user.id, "Вы успешно сменили имя")
 
