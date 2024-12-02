@@ -1,12 +1,11 @@
+import time
+
 import telebot
 from telebot import types
 import SQLfunctions
 
 bot = telebot.TeleBot('7424065506:AAHltx0rHaluI_GO-ecKf3HNExQBCCYi0dc')
 link = "t.me/Dasha_chat_manager_bot"
-
-
-
 
 def start_menu():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -29,13 +28,30 @@ def add_chat(message):
     bot.send_message(message.from_user.id, "Введите название чата:")
     bot.register_next_step_handler(message, save_chat_name)
 
+
 def save_chat_name(message):
-    SQLfunctions.add_admin(message.from_user.id, message.text)
+    print("Name")
+    chat_name = message.text
+    SQLfunctions.add_admin(message.from_user.id, chat_name)
     bot.send_message(message.from_user.id, "Жду, пока вы добавите меня в чат:)")
+    current_time = 0
+    while SQLfunctions.chat_cheker(message.from_user.id, chat_name):
+        print(f"жду{current_time} seconds")
+        current_time += 1
+        if current_time > 20:
+            bot.send_message(message.from_user.id, "Время вышло, чат не добавлен:(", reply_markup=start_menu())
+            return
+        time.sleep(1)
+    bot.send_message(message.from_user.id, "Напишите список ФИО участников, которые должны быть в группе:")
+    bot.register_next_step_handler(message, save_chat, chat_name)
 
-def save_chat(user_id):
-    bot.send_message(user_id, "Напишите список участников, которые должны состоять в группе")
 
+def save_chat(message, chat_name):
+    SQLfunctions.add_members(chat_name, message.from_user.id, message.text)
+    bot.send_message(message.from_user.id, "Чат успешно добавлен!")
+
+@bot.message_handler(func=lambda message: message.text == "Добавить чат")
+def start_registration
 
 
 @bot.message_handler(content_types=['new_chat_members'])
@@ -46,8 +62,8 @@ def welcome_new_member(message):
             chat_name = message.chat.title
             user_id = message.from_user.id
             if SQLfunctions.chat_cheker(user_id, chat_name):
+                SQLfunctions.add_chat_to_db(chat_name, chat_id, user_id)
                 bot.send_message(chat_id, f"Привет! Вот ссылка для регистрации участника чата:{link}")
-                save_chat(user_id)
 
 
 @bot.polling(none_stop=True)
