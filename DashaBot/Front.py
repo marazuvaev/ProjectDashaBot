@@ -99,6 +99,10 @@ def welcome_new_member(message):
             member_count = bot.get_chat_members_count(chat_id)
             for user_id in range(1, member_count + 1):
                 member = bot.get_chat_member(chat_id, user_id)
+                if member.user.id == bot.get_me().id:
+                    continue
+                if member.user.id == user_id:
+                    continue
                 SQLfunctions.add_chat_user(member.user.id, chat_id)
         else:
             SQLfunctions.add_chat_user(new_member.id, chat_id)
