@@ -11,8 +11,10 @@ def start_menu():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     item = types.KeyboardButton("Добавить чат")
     item2 = types.KeyboardButton("Зарегистрироваться для существующего чата")
+    item3 = types.KeyboardButton("Сменить список пользователей для существующего чата")
     markup.add(item)
     markup.add(item2)
+    markup.add(item3)
     return markup
 
 @bot.message_handler(commands=['start'])
@@ -84,6 +86,23 @@ def change_user_name(message):
         return
     SQLfunctions.change_user_name(message.from_user.id, fio)
     bot.send_message(message.from_user.id, "Вы успешно сменили имя")
+
+
+@bot.message_handler(func=lambda message: message.text == "Сменить список пользователей для существующего чата")
+def start_changing(message):
+    bot.send_message(message.from_user.id, "В каком чате?")
+    bot.register_next_step_handler(message, get_new_list)
+
+
+def get_new_list(message):
+    members = SQLfunctions.get_members(message.from_user.id, message.text)
+    bot.send_message(message.from_user.id, f"Текущий список: {members}, отправьте новый список")
+    bot.register_next_step_handler(message, change_chat_users, message.text)
+
+
+def change_chat_users(message, chat_name):
+    SQLfunctions.add_members(chat_name, message.from_user.id, message.text)
+    bot.send_message(message.from_user.id, "Список изменен")
 
 
 @bot.message_handler(content_types=['new_chat_members'])
