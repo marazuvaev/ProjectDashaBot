@@ -79,10 +79,18 @@ def add_chat_user(user_id: int, chat_id: int) -> None:
     connection.close()
 
 
-def get_start_time(user_id, chat_id) -> int:
+def get_start_time(user_id: int, chat_id: int) -> int:
     connection = sq.connect('chats.db')
     cursor = connection.cursor()
     a = cursor.execute("SELECT start_time FROM users_and_chats WHERE user_id = ? AND chat_id = ?", (user_id, chat_id)).fetchone()
     cursor.close()
     connection.close()
     return a[0]
+
+
+def get_members(user_id: int, chat_name: str):
+    pass
+
+
+def change_members(user_id: int, chat_name: str):
+    pass
