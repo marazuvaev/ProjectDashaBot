@@ -89,8 +89,9 @@ def get_start_time(user_id: int, chat_id: int) -> int:
 
 
 def get_members(user_id: int, chat_name: str):
-    pass
-
-
-def change_members(user_id: int, chat_name: str):
-    pass
+    connection = sq.connect('chats.db')
+    cursor = connection.cursor()
+    a = cursor.execute("SELECT users_names FROM chats WHERE user_id = ? AND chat_name = ?", (user_id, chat_name)).fetchone()
+    cursor.close()
+    connection.close()
+    return a[0]
