@@ -96,7 +96,7 @@ def start_changing(message):
 
 def get_new_list(message):
     members = SQLfunctions.get_members(message.from_user.id, message.text)
-    bot.send_message(message.from_user.id, f"Текущий список: {members}, отправьте новый список")
+    bot.send_message(message.from_user.id, f"Текущий список:\n {members}\n\n отправьте новый список")
     bot.register_next_step_handler(message, change_chat_users, message.text)
 
 
