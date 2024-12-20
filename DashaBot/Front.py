@@ -3,6 +3,12 @@ import time
 import telebot
 from telebot import types
 import SQLfunctions
+import logging
+
+# Настройка логирования
+logging.basicConfig(level=logging.DEBUG,  # Уровень логирования (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+                    format='%(asctime)s - %(levelname)s - %(message)s',  # Формат сообщения
+                    datefmt='%Y-%m-%d %H:%M:%S')
 
 bot = telebot.TeleBot('7424065506:AAHltx0rHaluI_GO-ecKf3HNExQBCCYi0dc')
 link = "t.me/Dasha_chat_manager_bot"
