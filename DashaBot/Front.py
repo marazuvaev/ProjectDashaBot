@@ -128,11 +128,23 @@ def welcome_new_member(message):
             SQLfunctions.add_chat_user(new_member.id, chat_id)
             bot.send_message(chat_id, f"Привет! Вот ссылка для регистрации участника чата:{link}")
 
+def open_db():
+    pass
 
+def close_db():
+    pass
 
 @bot.polling(none_stop=True)
 def main():
-    print("Бот запущен")
+    open_db()
+
+    try:
+        bot.polling(none_stop=True)
+    except KeyboardInterrupt:
+        close_db()
+    except Exception as e:
+        logging.error(f"Ошибка: {e}")
+        close_db()
 
 if __name__ == "__main__":
     main()
