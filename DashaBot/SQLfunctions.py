@@ -134,4 +134,9 @@ def delete_user_by_chat(user_id: int, chat_id: int):
 
 
 def get_chat_by_name(admin_id: int, chat_name: str):
-    pass
+    connection = sq.connect('chats.db')
+    cursor = connection.cursor()
+    a = cursor.execute("SELECT telegram_id FROM chats WHERE admin_id = ? AND chat_name = ?", (admin_id, chat_name)).fetchone()
+    cursor.close()
+    connection.close()
+    return a[0]
