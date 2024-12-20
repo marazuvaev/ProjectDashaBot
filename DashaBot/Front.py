@@ -146,8 +146,6 @@ def close_db():
 
 
 
-
-@bot.polling(none_stop=True)
 def main():
     open_db()
 
