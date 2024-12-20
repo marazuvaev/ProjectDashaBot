@@ -55,3 +55,6 @@ def get_start_time(user_id: int, chat_id: int, connection, cursor) -> int:
 def get_members(user_id: int, chat_name: str, connection, cursor):
     a = cursor.execute("SELECT users_names FROM chats WHERE admin_id = ? AND chat_name = ?", (user_id, chat_name)).fetchone()
     return a[0]
+
+def get_users_by_chat(chat_id: int, connection, cursor):
+    pass
