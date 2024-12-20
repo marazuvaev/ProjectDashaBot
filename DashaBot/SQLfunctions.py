@@ -103,7 +103,7 @@ def get_users_by_chat(chat_id: int):
     a = cursor.execute("SELECT user_id FROM users_and_chats WHERE chat_id = ?", (chat_id,)).fetchall()
     cursor.close()
     connection.close()
-    return a
+    return [_[0] for _ in a]
 
 
 def get_user_name(user_id: int):
@@ -118,7 +118,7 @@ def get_user_name(user_id: int):
 def get_members_by_chat(chat_id: int):
     connection = sq.connect('chats.db')
     cursor = connection.cursor()
-    a = cursor.execute("SELECT users_names FROM chats WHERE telegram_id = ?", (chat_id)).fetchone()
+    a = cursor.execute("SELECT users_names FROM chats WHERE telegram_id = ?", (chat_id,)).fetchone()
     cursor.close()
     connection.close()
     return set([tuple(_.split()) for _ in a[0].split(',')])

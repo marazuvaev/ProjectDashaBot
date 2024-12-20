@@ -127,7 +127,7 @@ def welcome_new_member(message):
                 SQLfunctions.add_chat_to_db(chat_name, chat_id, user_id)
                 # scheduler.add_job(job, 'cron', args=[chat_id], hour=time.time() % 86400 // 3600, minute=time.time() % 3600 // 60, id=str(chat_id))
                 scheduler.add_job(job, 'cron', args=[chat_id], hour=18,
-                                  minute=10, id=str(chat_id))
+                                  minute=54, id=str(chat_id))
             else:
                 bot.send_message(chat_id, f"Извините, не знаю такого чата")
                 bot.leave_chat(chat_id)
@@ -149,12 +149,15 @@ def job(chat_id):
     expected_members = SQLfunctions.get_members_by_chat(chat_id)
     current_members = SQLfunctions.get_users_by_chat(chat_id)
     for user_id in current_members:
+        user_id = user_id[0]
         if SQLfunctions.is_user_exists(user_id):
             name = SQLfunctions.get_user_name(user_id)
             if name not in expected_members:
-                if bot.ban_chat_member(chat_id, user_id):
-                    bot.send_message(chat_id,
-                                     f"Пользователь {' '.join(name)} был удален из чата, так как его нет в ожидаемом списке пользователей")
+                # if bot.ban_chat_member(chat_id, user_id):
+                #     bot.send_message(chat_id,
+                #                      f"Пользователь {' '.join(name)} был удален из чата, так как его нет в ожидаемом списке пользователей")
+                bot.send_message(chat_id,
+                                 f"Пользователь {' '.join(name)} был удален из чата, так как его нет в ожидаемом списке пользователей")
 
         else:
             if time.time() - SQLfunctions.get_start_time(user_id, chat_id) > 3 * 24 * 60 * 60:
