@@ -11,13 +11,14 @@ connection = sq.connect('chats.db')
 cursor = connection.cursor()
 
 # Настройка логирования
-logging.basicConfig(level=logging.DEBUG,  # Уровень логирования (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+logging.basicConfig(level=logging.INFO,  # Уровень логирования (DEBUG, INFO, WARNING, ERROR, CRITICAL)
                     format='%(asctime)s - %(levelname)s - %(message)s',  # Формат сообщения
                     datefmt='%Y-%m-%d %H:%M:%S')
 
 bot = telebot.TeleBot('7424065506:AAHltx0rHaluI_GO-ecKf3HNExQBCCYi0dc')
 link = "t.me/Dasha_chat_manager_bot"
 scheduler = BackgroundScheduler()
+
 
 def start_menu():
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -29,12 +30,15 @@ def start_menu():
     markup.add(item3)
     return markup
 
+
 @bot.message_handler(commands=['start'])
 def start(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("Добавить чат")
     markup.add(btn1)
-    bot.send_message(message.from_user.id, '👋 Привет! Я чат-менеджер Даша. Для начала работы нажми кнопку "Добавить чат"', reply_markup=start_menu())
+    bot.send_message(message.from_user.id,
+                     '👋 Привет! Я чат-менеджер Даша. Для начала работы нажми кнопку "Добавить чат"',
+                     reply_markup=start_menu())
 
 
 @bot.message_handler(func=lambda message: message.text == "Добавить чат")
@@ -65,7 +69,6 @@ def save_chat(message, chat_name):
     bot.send_message(message.from_user.id, "Чат успешно добавлен!")
 
 
-
 @bot.message_handler(func=lambda message: message.text == "Зарегистрироваться для существующего чата")
 def start_registration(message):
     if SQLfunctions.is_user_exists(message.from_user.id, connection, cursor):
@@ -82,7 +85,6 @@ def save_user_name(message):
     fio = message.text.split()
     SQLfunctions.add_user(message.from_user.id, fio, connection, cursor)
     bot.send_message(message.from_user.id, "Вы успешно зарегистрированы")
-
 
 
 @bot.message_handler(func=lambda message: message.text == "сменить ФИО")
@@ -126,6 +128,9 @@ def welcome_new_member(message):
         if new_member.id == bot.get_me().id:
             if SQLfunctions.chat_cheker(user_id, chat_name, connection, cursor):
                 SQLfunctions.add_chat_to_db(chat_name, chat_id, user_id, connection, cursor)
+                # scheduler.add_job(job, 'cron', args=[chat_id], hour=time.time() % 86400 // 3600, minute=time.time() % 3600 // 60, id=str(chat_id))
+                scheduler.add_job(job, 'cron', args=[chat_id], hour=18,
+                                  minute=10, id=str(chat_id))
             else:
                 bot.send_message(chat_id, f"Извините, не знаю такого чата")
                 bot.leave_chat(chat_id)
@@ -145,10 +150,26 @@ def close_db():
     connection.close()
 
 
+def job(chat_id):
+    expected_members = SQLfunctions.get_members_by_chat(chat_id, connection, cursor)
+    current_members = SQLfunctions.get_users_by_chat(chat_id, connection, cursor)
+    for user_id in current_members:
+        if SQLfunctions.is_user_exists(user_id, connection, cursor):
+            name = SQLfunctions.get_user_name(user_id, connection, cursor)
+            if name not in expected_members:
+                if bot.ban_chat_member(chat_id, user_id):
+                    bot.send_message(chat_id,
+                                     f"Пользователь {' '.join(name)} был удален из чата, так как его нет в ожидаемом списке пользователей")
+
+        else:
+            if time.time() - SQLfunctions.get_start_time(user_id, chat_id, connection, cursor) > 3 * 24 * 60 * 60:
+                if bot.ban_chat_member(chat_id, user_id):
+                    bot.send_message(chat_id, f"Пользователь был удален из чата, так как не прошел регистрацию")
+
 
 def main():
     open_db()
-
+    scheduler.start()
     try:
         bot.polling(none_stop=True)
     except KeyboardInterrupt:
