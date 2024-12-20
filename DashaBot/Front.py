@@ -169,6 +169,8 @@ def welcome_new_member(message):
 
 @bot.message_handler(content_types=['left_chat_member'])
 def handle_user_left(message):
+    if message.left_chat_member.id == bot.get_me().id:
+        return
     chat_id = message.chat.id
     user_id = message.left_chat_member.id
     SQLfunctions.delete_user_by_chat(user_id, chat_id)
