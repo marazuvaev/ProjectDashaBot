@@ -112,7 +112,7 @@ def get_user_name(user_id: int):
     a = cursor.execute("SELECT surname, name, middle_name FROM users WHERE telegram_id = ?", (user_id,)).fetchone()
     cursor.close()
     connection.close()
-    return a[0]
+    return a
 
 
 def get_members_by_chat(chat_id: int):
