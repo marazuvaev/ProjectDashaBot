@@ -58,3 +58,6 @@ def get_members(user_id: int, chat_name: str, connection, cursor):
 
 def get_users_by_chat(chat_id: int, connection, cursor):
     pass
+
+def get_user_name(user_id: int, connection, cursor):
+    pass
