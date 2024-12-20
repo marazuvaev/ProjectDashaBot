@@ -56,11 +56,17 @@ def get_members(user_id: int, chat_name: str, connection, cursor):
     a = cursor.execute("SELECT users_names FROM chats WHERE admin_id = ? AND chat_name = ?", (user_id, chat_name)).fetchone()
     return a[0]
 
+
 def get_users_by_chat(chat_id: int, connection, cursor):
-    pass
+    a = cursor.execute("SELECT user_id FROM users_and_chats WHERE chat_id = ?", (chat_id,)).fetchall()
+    return a
+
 
 def get_user_name(user_id: int, connection, cursor):
-    pass
+    a = cursor.execute("SELECT surname, name, middle_name FROM users WHERE telegram_id = ?", (user_id,)).fetchone()
+    return a[0]
+
 
 def get_members_by_chat(chat_id: int, connection, cursor):
-    pass
+    a = cursor.execute("SELECT users_names FROM chats WHERE telegram_id = ?", (chat_id)).fetchone()
+    return set([tuple(_.split()) for _ in a[0].split(',')])
