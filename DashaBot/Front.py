@@ -5,7 +5,8 @@ import telebot
 from telebot import types
 import SQLfunctions
 import logging
-import sqlite3 as sq
+import random
+import Checks
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO,  # Уровень логирования (DEBUG, INFO, WARNING, ERROR, CRITICAL)
@@ -38,6 +39,10 @@ def start(message):
     bot.send_message(message.from_user.id,
                      '👋 Привет! Я чат-менеджер Даша. Для начала работы нажми кнопку "Добавить чат"',
                      reply_markup=start_menu())
+
+@bot.message_handler(commands=['help'])
+def help(message):
+    bot.send_message(message.from_user.id, Checks.help_output)
 
 
 @bot.message_handler(func=lambda message: message.text == "Добавить чат")
@@ -148,6 +153,16 @@ def welcome_new_member(message):
         else:
             SQLfunctions.add_chat_user(new_member.id, chat_id)
             bot.send_message(chat_id, f"Привет! Вот ссылка для регистрации участника чата:{link}")
+
+
+@bot.message_handler(content_types=['left_chat_member'])
+def handle_user_left(message):
+    chat_id = message.chat.id
+    user_id = message.left_chat_member.id
+    SQLfunctions.delete_user_by_chat(user_id, chat_id)
+    stupid_messages = ['Ну пока(', 'Не очень то и хотелось', 'У него маленький хуй', 'А мне похуй ваще']
+    bot.send_message(chat_id, random.choice(stupid_messages))
+
 
 
 def open_db():
