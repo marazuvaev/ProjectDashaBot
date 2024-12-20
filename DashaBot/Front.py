@@ -22,9 +22,11 @@ def start_menu():
     item = types.KeyboardButton("Добавить чат")
     item2 = types.KeyboardButton("Зарегистрироваться для существующего чата")
     item3 = types.KeyboardButton("Сменить список пользователей для существующего чата")
+    item4 = types.KeyboardButton("Проверить пользователей существующего чата")
     markup.add(item)
     markup.add(item2)
     markup.add(item3)
+    markup.add(item4)
     return markup
 
 
@@ -116,6 +118,17 @@ def change_chat_users(message, chat_name):
     bot.send_message(message.from_user.id, "Список изменен")
 
 
+@bot.message_handler(func=lambda message: message.text == "")
+def start_checking(message):
+    bot.send_message(message.from_user.id, f"В каком чате надо осуществить проверку?")
+    bot.register_next_step_handler(message, checking, message.text)
+
+
+def checking(message):
+    chat_id = SQLfunctions.get_chat_by_name(message.from_user.id, message.text)
+    bot.send_message(message.from_user.id, f"Список тех, кто еще не зашел в чат или не зарегистрировался:\n {', '.join(job(chat_id, True))}\n\n")
+
+
 @bot.message_handler(content_types=['new_chat_members'])
 def welcome_new_member(message):
     for new_member in message.new_chat_members:
@@ -126,8 +139,8 @@ def welcome_new_member(message):
             if SQLfunctions.chat_cheker(user_id, chat_name):
                 SQLfunctions.add_chat_to_db(chat_name, chat_id, user_id)
                 # scheduler.add_job(job, 'cron', args=[chat_id], hour=time.time() % 86400 // 3600, minute=time.time() % 3600 // 60, id=str(chat_id))
-                scheduler.add_job(job, 'cron', args=[chat_id], hour=19,
-                                  minute=10, id=str(chat_id))
+                # scheduler.add_job(job, 'cron', args=[chat_id], hour=19, minute=10, id=str(chat_id))
+
             else:
                 bot.send_message(chat_id, f"Извините, не знаю такого чата")
                 bot.leave_chat(chat_id)
@@ -145,9 +158,11 @@ def close_db():
     logging.info("Бот прекратил работу")
 
 
-def job(chat_id):
+def job(chat_id, table=False):
     expected_members = SQLfunctions.get_members_by_chat(chat_id)
     current_members = SQLfunctions.get_users_by_chat(chat_id)
+    needed_members = set(expected_members.copy())
+
     for user_id in current_members:
         if SQLfunctions.is_user_exists(user_id):
             name = SQLfunctions.get_user_name(user_id)
@@ -155,13 +170,18 @@ def job(chat_id):
                 if bot.ban_chat_member(chat_id, user_id):
                     bot.send_message(chat_id,
                                      f"Пользователь {' '.join(name)} был удален из чата, так как его нет в ожидаемом списке пользователей")
-                # bot.send_message(chat_id,
-                #                  f"Пользователь {' '.join(name)} был удален из чата, так как его нет в ожидаемом списке пользователей")
+                    SQLfunctions.delete_user_by_chat(user_id, chat_id)
+            else:
+                needed_members.remove(name)
 
         else:
             if time.time() - SQLfunctions.get_start_time(user_id, chat_id) > 3 * 24 * 60 * 60:
                 if bot.ban_chat_member(chat_id, user_id):
                     bot.send_message(chat_id, f"Пользователь был удален из чата, так как не прошел регистрацию")
+
+        if table:
+            return [' '.join(_) for _ in needed_members]
+
 
 
 def main():
