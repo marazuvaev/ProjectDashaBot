@@ -69,6 +69,9 @@ def save_chat_name(message):
 
 
 def save_chat(message, chat_name):
+    if not Checks.check_members(message.text):
+        bot.send_message(message.from_user.id, "Некорректный формат", reply_markup=start_menu())
+        return
     SQLfunctions.add_members(chat_name, message.from_user.id, message.text)
     bot.send_message(message.from_user.id, "Чат успешно добавлен!")
 
@@ -86,6 +89,9 @@ def start_registration(message):
 
 
 def save_user_name(message):
+    if not Checks.check_regestrtion(message.text):
+        bot.send_message(message.from_user.id, "Некорректный формат", reply_markup=start_menu())
+        return
     fio = message.text.split()
     SQLfunctions.add_user(message.from_user.id, fio)
     bot.send_message(message.from_user.id, "Вы успешно зарегистрированы")
@@ -98,6 +104,9 @@ def change_user_name_start(message):
 
 
 def change_user_name(message):
+    if not Checks.check_regestrtion(message.text):
+        bot.send_message(message.from_user.id, "Некорректный формат", reply_markup=start_menu())
+        return
     fio = message.text.split()
     if not SQLfunctions.is_user_exists(message.from_user.id):
         bot.send_message(message.from_user.id, "Вы еще не зарегистрированы", reply_markup=start_menu())
@@ -119,6 +128,9 @@ def get_new_list(message):
 
 
 def change_chat_users(message, chat_name):
+    if not Checks.check_members(message.text):
+        bot.send_message(message.from_user.id, "Некорректный формат", reply_markup=start_menu())
+        return
     SQLfunctions.add_members(chat_name, message.from_user.id, message.text)
     bot.send_message(message.from_user.id, "Список изменен")
 
