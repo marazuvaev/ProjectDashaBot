@@ -122,3 +122,7 @@ def get_members_by_chat(chat_id: int):
     cursor.close()
     connection.close()
     return set([tuple(_.split()) for _ in a[0].split(',')])
+
+
+def delete_user_by_chat(user_id: int, chat_id: int):
+    pass
