@@ -125,4 +125,10 @@ def get_members_by_chat(chat_id: int):
 
 
 def delete_user_by_chat(user_id: int, chat_id: int):
-    pass
+    connection = sq.connect('chats.db')
+    cursor = connection.cursor()
+    cursor.execute(("DELETE FROM users_and_chats WHERE user_id = ? AND chat_id = ?"), (user_id, chat_id))
+    connection.commit()
+    cursor.close()
+    connection.close()
+    
