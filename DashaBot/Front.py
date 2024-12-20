@@ -7,9 +7,6 @@ import SQLfunctions
 import logging
 import sqlite3 as sq
 
-connection = sq.connect('chats.db')
-cursor = connection.cursor()
-
 # Настройка логирования
 logging.basicConfig(level=logging.INFO,  # Уровень логирования (DEBUG, INFO, WARNING, ERROR, CRITICAL)
                     format='%(asctime)s - %(levelname)s - %(message)s',  # Формат сообщения
@@ -50,10 +47,10 @@ def add_chat(message):
 def save_chat_name(message):
     print("Name")
     chat_name = message.text
-    SQLfunctions.add_admin(message.from_user.id, chat_name, connection, cursor)
+    SQLfunctions.add_admin(message.from_user.id, chat_name)
     bot.send_message(message.from_user.id, "Жду, пока вы добавите меня в чат:)")
     current_time = 0
-    while SQLfunctions.chat_cheker(message.from_user.id, chat_name, connection, cursor):
+    while SQLfunctions.chat_cheker(message.from_user.id, chat_name):
         print(f"жду{current_time} seconds")
         current_time += 1
         if current_time > 20:
@@ -65,13 +62,13 @@ def save_chat_name(message):
 
 
 def save_chat(message, chat_name):
-    SQLfunctions.add_members(chat_name, message.from_user.id, message.text, connection, cursor)
+    SQLfunctions.add_members(chat_name, message.from_user.id, message.text)
     bot.send_message(message.from_user.id, "Чат успешно добавлен!")
 
 
 @bot.message_handler(func=lambda message: message.text == "Зарегистрироваться для существующего чата")
 def start_registration(message):
-    if SQLfunctions.is_user_exists(message.from_user.id, connection, cursor):
+    if SQLfunctions.is_user_exists(message.from_user.id):
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
         btn = types.KeyboardButton("сменить ФИО")
         markup.add(btn)
@@ -83,7 +80,7 @@ def start_registration(message):
 
 def save_user_name(message):
     fio = message.text.split()
-    SQLfunctions.add_user(message.from_user.id, fio, connection, cursor)
+    SQLfunctions.add_user(message.from_user.id, fio)
     bot.send_message(message.from_user.id, "Вы успешно зарегистрированы")
 
 
@@ -95,10 +92,10 @@ def change_user_name_start(message):
 
 def change_user_name(message):
     fio = message.text.split()
-    if not SQLfunctions.is_user_exists(message.from_user.id, connection, cursor):
+    if not SQLfunctions.is_user_exists(message.from_user.id):
         bot.send_message(message.from_user.id, "Вы еще не зарегистрированы", reply_markup=start_menu())
         return
-    SQLfunctions.change_user_name(message.from_user.id, fio, connection, cursor)
+    SQLfunctions.change_user_name(message.from_user.id, fio)
     bot.send_message(message.from_user.id, "Вы успешно сменили имя")
 
 
@@ -109,13 +106,13 @@ def start_changing(message):
 
 
 def get_new_list(message):
-    members = SQLfunctions.get_members(message.from_user.id, message.text, connection, cursor)
+    members = SQLfunctions.get_members(message.from_user.id, message.text)
     bot.send_message(message.from_user.id, f"Текущий список:\n {members}\n\n отправьте новый список")
     bot.register_next_step_handler(message, change_chat_users, message.text)
 
 
 def change_chat_users(message, chat_name):
-    SQLfunctions.add_members(chat_name, message.from_user.id, message.text, connection, cursor)
+    SQLfunctions.add_members(chat_name, message.from_user.id, message.text)
     bot.send_message(message.from_user.id, "Список изменен")
 
 
@@ -126,8 +123,8 @@ def welcome_new_member(message):
         chat_name = message.chat.title
         user_id = message.from_user.id
         if new_member.id == bot.get_me().id:
-            if SQLfunctions.chat_cheker(user_id, chat_name, connection, cursor):
-                SQLfunctions.add_chat_to_db(chat_name, chat_id, user_id, connection, cursor)
+            if SQLfunctions.chat_cheker(user_id, chat_name):
+                SQLfunctions.add_chat_to_db(chat_name, chat_id, user_id)
                 # scheduler.add_job(job, 'cron', args=[chat_id], hour=time.time() % 86400 // 3600, minute=time.time() % 3600 // 60, id=str(chat_id))
                 scheduler.add_job(job, 'cron', args=[chat_id], hour=18,
                                   minute=10, id=str(chat_id))
@@ -136,7 +133,7 @@ def welcome_new_member(message):
                 bot.leave_chat(chat_id)
                 return
         else:
-            SQLfunctions.add_chat_user(new_member.id, chat_id, connection, cursor)
+            SQLfunctions.add_chat_user(new_member.id, chat_id)
             bot.send_message(chat_id, f"Привет! Вот ссылка для регистрации участника чата:{link}")
 
 
@@ -146,23 +143,21 @@ def open_db():
 
 def close_db():
     logging.info("Бот прекратил работу")
-    cursor.close()
-    connection.close()
 
 
 def job(chat_id):
-    expected_members = SQLfunctions.get_members_by_chat(chat_id, connection, cursor)
-    current_members = SQLfunctions.get_users_by_chat(chat_id, connection, cursor)
+    expected_members = SQLfunctions.get_members_by_chat(chat_id)
+    current_members = SQLfunctions.get_users_by_chat(chat_id)
     for user_id in current_members:
-        if SQLfunctions.is_user_exists(user_id, connection, cursor):
-            name = SQLfunctions.get_user_name(user_id, connection, cursor)
+        if SQLfunctions.is_user_exists(user_id):
+            name = SQLfunctions.get_user_name(user_id)
             if name not in expected_members:
                 if bot.ban_chat_member(chat_id, user_id):
                     bot.send_message(chat_id,
                                      f"Пользователь {' '.join(name)} был удален из чата, так как его нет в ожидаемом списке пользователей")
 
         else:
-            if time.time() - SQLfunctions.get_start_time(user_id, chat_id, connection, cursor) > 3 * 24 * 60 * 60:
+            if time.time() - SQLfunctions.get_start_time(user_id, chat_id) > 3 * 24 * 60 * 60:
                 if bot.ban_chat_member(chat_id, user_id):
                     bot.send_message(chat_id, f"Пользователь был удален из чата, так как не прошел регистрацию")
 
