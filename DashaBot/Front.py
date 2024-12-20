@@ -135,10 +135,10 @@ def change_chat_users(message, chat_name):
     bot.send_message(message.from_user.id, "Список изменен")
 
 
-@bot.message_handler(func=lambda message: message.text == "")
+@bot.message_handler(func=lambda message: message.text == "Проверить пользователей существующего чата")
 def start_checking(message):
     bot.send_message(message.from_user.id, f"В каком чате надо осуществить проверку?")
-    bot.register_next_step_handler(message, checking, message.text)
+    bot.register_next_step_handler(message, checking)
 
 
 def checking(message):
