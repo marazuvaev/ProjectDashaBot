@@ -131,4 +131,7 @@ def delete_user_by_chat(user_id: int, chat_id: int):
     connection.commit()
     cursor.close()
     connection.close()
-    
+
+
+def get_chat_by_name(admin_id: int, chat_name: str):
+    pass
