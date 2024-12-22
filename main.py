@@ -313,7 +313,7 @@ def is_bot_admin(chat_id):
             if admin.user.id == bot.get_me().id:
                 return True
     except Exception as e:
-        logging.ERROR(
+        logging.error(
             f"Ошибка при проверке администраторов в чате {chat_id}: {e}")
     return False
 
@@ -323,7 +323,7 @@ def is_user_in_chat(chat_id, user_id):
         member = bot.get_chat_member(chat_id, user_id)
         return member.status in ['member']
     except Exception as e:
-        logging.ERROR(f"Ошибка при проверке участника в чате {chat_id}: {e}")
+        logging.error(f"Ошибка при проверке участника в чате {chat_id}: {e}")
         return False
 
 
