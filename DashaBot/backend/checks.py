@@ -5,6 +5,7 @@ def check_regestrtion(string: str) -> bool:
 def check_members(string: str) -> bool:
     return all(map(check_regestrtion, string.split(',')))
 
+
 help_output = '''
 Вас приветствует ваш помощьник по чатам ДашаБот!
 Данный бот позволяет контролировать участников вашей группы,
