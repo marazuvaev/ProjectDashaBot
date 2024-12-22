@@ -13,9 +13,9 @@ import os
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S')
-f = open("./backend/key.txt", 'r')
+f = open("./DashaBot/backend/key.txt", 'r')
 bot = telebot.TeleBot(
-    f.readline()[:-1], num_threads=os.cpu_count())
+    f.readline(), num_threads=os.cpu_count())
 link = "t.me/Dasha_chat_manager_bot"
 scheduler = BackgroundScheduler()
 processes = dict()
