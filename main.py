@@ -8,7 +8,6 @@ import random
 import backend.checks as checks
 import os
 
-
 # Настройка логирования
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -23,8 +22,8 @@ processes = dict()
 
 def add_jobs_from_db():
     for chat_id in repo.all_chats_ids():
-        processes[chat_id[0]] = scheduler.add_job(chat_users_checker_job, 'cron', args=[
-                                                  chat_id[0]], second=0, id=str(chat_id[0])).id
+        processes[chat_id[0]] = scheduler.add_job(chat_users_checker_job, 'cron', args=[chat_id[0]], second=0,
+                                                  id=str(chat_id[0])).id
 
 
 def begin():
@@ -65,7 +64,7 @@ def start(message):
 
 
 @bot.message_handler(commands=['help'])
-def help(message):
+def helping(message):
     bot.send_message(message.from_user.id, checks.help_output)
 
 
@@ -81,8 +80,7 @@ def save_chat_name(message):
 
     bot.send_message(message.from_user.id,
                      "Жду, пока вы добавите меня в чат:)", reply_markup=start_menu())
-    logging.info(f"Пользователь {
-                 message.from_user.id} добавляет бота в группу {chat_name}")
+    logging.info(f"Пользователь {message.from_user.id} добавляет бота в группу {chat_name}")
 
     # current_time = 0
     #
@@ -108,7 +106,8 @@ def start_adding(message):
 def continue_adding(message):
     if not repo.is_chat_added(message.from_user.id, message.text):
         bot.send_message(
-            message.from_user.id, "В такой чат вы вообще не хотели меня добавить, идиот ебучий!", reply_markup=start_menu())
+            message.from_user.id, "В такой чат вы вообще не хотели меня добавить, идиот ебучий!",
+            reply_markup=start_menu())
         return
 
     if repo.chat_cheker(message.from_user.id, message.text):
@@ -123,14 +122,12 @@ def continue_adding(message):
 
 def save_chat(message, chat_name):
     if not checks.check_members(message.text):
-        logging.info(f"Пользователь {
-                     message.from_user.id} некорректно ввел список участников чата {chat_name}")
+        logging.info(f"Пользователь {message.from_user.id} некорректно ввел список участников чата {chat_name}")
         bot.send_message(message.from_user.id,
                          "Некорректный формат", reply_markup=start_menu())
         return
     repo.add_members(chat_name, message.from_user.id, message.text)
-    logging.info(f"Пользователь {
-                 message.from_user.id} успешно завершил регистрацию чата {chat_name}")
+    logging.info(f"Пользователь {message.from_user.id} успешно завершил регистрацию чата {chat_name}")
     bot.send_message(message.from_user.id, "Чат успешно добавлен!")
 
 
@@ -151,15 +148,13 @@ def start_registration(message):
 
 def save_user_name(message):
     if not checks.check_regestrtion(message.text):
-        logging.info(f"Регистрация {
-                     message.from_user.id} отклонена в связи с неверным форматом")
+        logging.info(f"Регистрация {message.from_user.id} отклонена в связи с неверным форматом")
         bot.send_message(message.from_user.id,
                          "Некорректный формат", reply_markup=start_menu())
         return
     fio = message.text.split()
     repo.add_user(message.from_user.id, fio)
-    logging.info(f"Пользователь {
-                 message.from_user.id} зарегестрировался под именем {message.text}")
+    logging.info(f"Пользователь {message.from_user.id} зарегестрировался под именем {message.text}")
     bot.send_message(message.from_user.id, "Вы успешно зарегистрированы")
 
 
@@ -184,8 +179,7 @@ def change_user_name(message):
                          "Вы еще не зарегистрированы", reply_markup=start_menu())
         return
     repo.change_user_name(message.from_user.id, fio)
-    logging.info(f"Пользователь {
-                 message.from_user.id} сменил имя на {message.text}")
+    logging.info(f"Пользователь {message.from_user.id} сменил имя на {message.text}")
     bot.send_message(message.from_user.id,
                      "Вы успешно сменили имя", reply_markup=start_menu())
 
@@ -198,8 +192,7 @@ def start_changing(message):
 
 def get_new_list(message):
     members = repo.get_members(message.from_user.id, message.text)
-    bot.send_message(message.from_user.id, f"Текущий список:\n {
-                     members}\n\n отправьте новый список")
+    bot.send_message(message.from_user.id, f"Текущий список:\n {members}\n\n отправьте новый список")
     bot.register_next_step_handler(message, change_chat_users, message.text)
 
 
@@ -211,8 +204,7 @@ def change_chat_users(message, chat_name):
                          "Некорректный формат", reply_markup=start_menu())
         return
     repo.add_members(chat_name, message.from_user.id, message.text)
-    logging.info(f"Пользователь {
-                 message.from_user.id} обновил список пользователей для чата {chat_name}")
+    logging.info(f"Пользователь {message.from_user.id} обновил список пользователей для чата {chat_name}")
     bot.send_message(message.from_user.id, "Список изменен")
 
 
@@ -227,8 +219,7 @@ def checking(message):
     if not repo.is_chat_added(message.from_user.id, message.text):
         bot.send_message(message.from_user.id, "Не знаю такого чата")
         return
-    logging.info(f"Пользователь {
-                 message.from_user.id} провел проверку в чате {message.text}")
+    logging.info(f"Пользователь {message.from_user.id} провел проверку в чате {message.text}")
     chat_id = repo.get_chat_by_name(message.from_user.id, message.text)
     users_to_output = chat_users_checker_job(chat_id, True)
     if users_to_output is not None:
@@ -251,7 +242,7 @@ def welcome_new_member(message):
                 # scheduler.add_job(job, 'cron', args=[chat_id], hour=time.time() % 86400 // 3600, minute=time.time() % 3600 // 60 - 1, id=str(chat_id))
                 # scheduler.add_job(job, 'cron', args=[chat_id], hour=19, minute=10, id=str(chat_id))
                 processes[chat_id] = scheduler.add_job(chat_users_checker_job, 'cron', args=[
-                                                       chat_id], second=0, id=str(chat_id)).id
+                    chat_id], second=0, id=str(chat_id)).id
 
             else:
                 bot.send_message(chat_id, f"Извините, не знаю такого чата")
@@ -307,8 +298,7 @@ def chat_users_checker_job(chat_id, table=False):
                 if bot.ban_chat_member(chat_id, user_id):
                     bot.send_message(
                         chat_id, f"Пользователь был удален из чата, так как не прошел регистрацию")
-                    logging.info(f"Пользователь {
-                                 user_id} был удален из чата {chat_id}")
+                    logging.info(f"Пользователь {user_id} был удален из чата {chat_id}")
 
     if table:
         if len(needed_members) > 0:
