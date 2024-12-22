@@ -148,4 +148,9 @@ def get_chat_by_name(admin_id: int, chat_name: str):
 
 
 def is_chat_added(admin_id: int, chat_name: str) -> bool:
-    pass
+    connection = sq.connect('chats.db')
+    cursor = connection.cursor()
+    a = cursor.execute("SELECT telegram_id FROM chats WHERE admin_id = ? AND chat_name = ?", (admin_id, chat_name)).fetchone()
+    cursor.close()
+    connection.close()
+    return len(a) != 0
