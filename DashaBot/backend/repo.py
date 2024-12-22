@@ -154,3 +154,6 @@ def is_chat_added(admin_id: int, chat_name: str) -> bool:
     cursor.close()
     connection.close()
     return len(a) != 0
+
+def delete_chat(chat_id):
+    pass

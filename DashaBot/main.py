@@ -17,6 +17,7 @@ logging.basicConfig(level=logging.INFO,
 bot = telebot.TeleBot('7424065506:AAHltx0rHaluI_GO-ecKf3HNExQBCCYi0dc', num_threads=4)
 link = "t.me/Dasha_chat_manager_bot"
 scheduler = BackgroundScheduler()
+processes = dict()
 
 
 def start_menu():
@@ -194,6 +195,7 @@ def start_checking(message):
 def checking(message):
     if not repo.is_chat_added(message.from_user.id, message.text):
         bot.send_message(message.from_user.id, "Не знаю такого чата")
+        return
     logging.info(f"Пользователь {message.from_user.id} провел проверку в чате {message.text}")
     chat_id = repo.get_chat_by_name(message.from_user.id, message.text)
     users_to_output = job(chat_id, True)
@@ -216,7 +218,7 @@ def welcome_new_member(message):
                 repo.add_chat_to_db(chat_name, chat_id, user_id)
                 # scheduler.add_job(job, 'cron', args=[chat_id], hour=time.time() % 86400 // 3600, minute=time.time() % 3600 // 60, id=str(chat_id))
                 # scheduler.add_job(job, 'cron', args=[chat_id], hour=19, minute=10, id=str(chat_id))
-                scheduler.add_job(job, 'cron', args=[chat_id], second=0, id=str(chat_id))
+                processes[chat_id] = scheduler.add_job(job, 'cron', args=[chat_id], second=0, id=str(chat_id)).id
 
             else:
                 bot.send_message(chat_id, f"Извините, не знаю такого чата")
@@ -231,6 +233,8 @@ def welcome_new_member(message):
 @bot.message_handler(content_types=['left_chat_member'])
 def handle_user_left(message):
     if message.left_chat_member.id == bot.get_me().id:
+        repo.delete_chat(message.chat.id)
+        scheduler.remove_job(processes[message.chat.id])
         return
     chat_id = message.chat.id
     user_id = message.left_chat_member.id
@@ -257,11 +261,10 @@ def job(chat_id, table=False):
             name = repo.get_user_name(user_id)
             if name not in expected_members:
                 if not is_bot_admin(chat_id):
-                    bot.send_message(chat_id, "Хуй")
+                    bot.send_message(chat_id, "Я не админ((((((")
                     continue
 
                 if not is_user_in_chat(chat_id, user_id):
-                    bot.send_message(chat_id, "Хуй2")
                     continue
 
                 if bot.ban_chat_member(chat_id, user_id):
@@ -298,7 +301,7 @@ def is_bot_admin(chat_id):
 def is_user_in_chat(chat_id, user_id):
     try:
         member = bot.get_chat_member(chat_id, user_id)
-        return member.status in ['member', 'administrator', 'creator']
+        return member.status in ['member']
     except Exception as e:
         print(f"Ошибка при проверке участника: {e}")
         return False
