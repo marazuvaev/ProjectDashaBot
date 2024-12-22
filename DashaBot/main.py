@@ -192,6 +192,8 @@ def start_checking(message):
 
 
 def checking(message):
+    if not repo.is_chat_added(message.from_user.id, message.text):
+        bot.send_message(message.from_user.id, "Не знаю такого чата")
     logging.info(f"Пользователь {message.from_user.id} провел проверку в чате {message.text}")
     chat_id = repo.get_chat_by_name(message.from_user.id, message.text)
     users_to_output = job(chat_id, True)
