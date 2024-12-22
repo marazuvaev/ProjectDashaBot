@@ -155,5 +155,11 @@ def is_chat_added(admin_id: int, chat_name: str) -> bool:
     connection.close()
     return len(a) != 0
 
+
 def delete_chat(chat_id):
-    pass
+    connection = sq.connect('chats.db')
+    cursor = connection.cursor()
+    cursor.execute(("DELETE FROM chats WHERE chat_id = ?"), (chat_id))
+    connection.commit()
+    cursor.close()
+    connection.close()
