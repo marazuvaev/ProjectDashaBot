@@ -26,10 +26,12 @@ def start_menu():
     item2 = types.KeyboardButton("Зарегистрироваться для существующего чата")
     item3 = types.KeyboardButton("Сменить список пользователей для существующего чата")
     item4 = types.KeyboardButton("Проверить пользователей существующего чата")
+    item5 = types.KeyboardButton("Проверить добавление")
     markup.add(item)
     markup.add(item2)
     markup.add(item3)
     markup.add(item4)
+    markup.add(item5)
     return markup
 
 
@@ -59,11 +61,7 @@ def save_chat_name(message):
     chat_name = message.text
     repo.add_admin(message.from_user.id, chat_name)
 
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item = types.KeyboardButton("Проверить добавление")
-    markup.add(item)
-
-    bot.send_message(message.from_user.id, "Жду, пока вы добавите меня в чат:)", reply_markup=markup)
+    bot.send_message(message.from_user.id, "Жду, пока вы добавите меня в чат:)", reply_markup=start_menu())
     logging.info(f"Пользователь {message.from_user.id} добавляет бота в группу {chat_name}")
 
     # current_time = 0
@@ -89,19 +87,11 @@ def start_adding(message):
 
 def continue_adding(message):
     if not repo.is_chat_added(message.from_user.id, message.text):
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        item = types.KeyboardButton("Проверить добавление")
-        markup.add(item)
-
-        bot.send_message(message.from_user.id, "В такой чат вы вообще не хотели меня добавить, идиот ебучий!", reply_markup=markup)
+        bot.send_message(message.from_user.id, "В такой чат вы вообще не хотели меня добавить, идиот ебучий!", reply_markup=start_menu())
         return
 
     if repo.chat_cheker(message.from_user.id, message.text):
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        item = types.KeyboardButton("Проверить добавление")
-        markup.add(item)
-
-        bot.send_message(message.from_user.id, "Туда вы меня еще не добавили", reply_markup=markup)
+        bot.send_message(message.from_user.id, "Туда вы меня еще не добавили", reply_markup=start_menu())
         return
     bot.send_message(message.from_user.id, "Чат добавлен")
     bot.send_message(message.from_user.id, "Напишите список ФИО участников, которые должны быть в группе:")
@@ -160,7 +150,7 @@ def change_user_name(message):
         return
     repo.change_user_name(message.from_user.id, fio)
     logging.info(f"Пользователь {message.from_user.id} сменил имя на {message.text}")
-    bot.send_message(message.from_user.id, "Вы успешно сменили имя")
+    bot.send_message(message.from_user.id, "Вы успешно сменили имя", reply_markup=start_menu())
 
 
 @bot.message_handler(func=lambda message: message.text == "Сменить список пользователей для существующего чата")
@@ -216,7 +206,7 @@ def welcome_new_member(message):
         if new_member.id == bot.get_me().id:
             if repo.chat_cheker(user_id, chat_name):
                 repo.add_chat_to_db(chat_name, chat_id, user_id)
-                # scheduler.add_job(job, 'cron', args=[chat_id], hour=time.time() % 86400 // 3600, minute=time.time() % 3600 // 60, id=str(chat_id))
+                # scheduler.add_job(job, 'cron', args=[chat_id], hour=time.time() % 86400 // 3600, minute=time.time() % 3600 // 60 - 1, id=str(chat_id))
                 # scheduler.add_job(job, 'cron', args=[chat_id], hour=19, minute=10, id=str(chat_id))
                 processes[chat_id] = scheduler.add_job(job, 'cron', args=[chat_id], second=0, id=str(chat_id)).id
 
