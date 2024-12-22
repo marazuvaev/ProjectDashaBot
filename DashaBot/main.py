@@ -7,13 +7,14 @@ import backend.repo as repo
 import logging
 import random
 import backend.checks as checks
+import asyncio
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S')
 
-bot = telebot.TeleBot('7424065506:AAHltx0rHaluI_GO-ecKf3HNExQBCCYi0dc')
+bot = telebot.TeleBot('7424065506:AAHltx0rHaluI_GO-ecKf3HNExQBCCYi0dc', num_threads=4)
 link = "t.me/Dasha_chat_manager_bot"
 scheduler = BackgroundScheduler()
 
@@ -41,6 +42,7 @@ def start(message):
                      '👋 Привет! Я чат-менеджер Даша. Для начала работы нажми кнопку "Добавить чат"\nДля получения помощи введите /help',
                      reply_markup=start_menu())
 
+
 @bot.message_handler(commands=['help'])
 def help(message):
     bot.send_message(message.from_user.id, checks.help_output)
@@ -55,19 +57,54 @@ def add_chat(message):
 def save_chat_name(message):
     chat_name = message.text
     repo.add_admin(message.from_user.id, chat_name)
-    bot.send_message(message.from_user.id, "Жду, пока вы добавите меня в чат:)")
+
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item = types.KeyboardButton("Проверить добавление")
+    markup.add(item)
+
+    bot.send_message(message.from_user.id, "Жду, пока вы добавите меня в чат:)", reply_markup=markup)
     logging.info(f"Пользователь {message.from_user.id} добавляет бота в группу {chat_name}")
-    current_time = 0
-    while repo.chat_cheker(message.from_user.id, chat_name):
-        current_time += 1
-        if current_time > 500:
-            logging.info(f"Пользователь {message.from_user.id} не успел добавить бота в группу {chat_name}")
-            bot.send_message(message.from_user.id, "Время вышло, чат не добавлен:(", reply_markup=start_menu())
-            return
-        time.sleep(1)
-    logging.info(f"Пользователь {message.from_user.id} успешно добавил бота в группу {chat_name}")
+
+    # current_time = 0
+    #
+    # while repo.chat_cheker(message.from_user.id, chat_name):
+    #     print(chat_name)
+    #     current_time += 1
+    #     if current_time > 500:
+    #         logging.info(f"Пользователь {message.from_user.id} не успел добавить бота в группу {chat_name}")
+    #         bot.send_message(message.from_user.id, "Время вышло, чат не добавлен:(", reply_markup=start_menu())
+    #         return
+    #     time.sleep(1)
+    # logging.info(f"Пользователь {message.from_user.id} успешно добавил бота в группу {chat_name}")
+    # bot.send_message(message.from_user.id, "Напишите список ФИО участников, которые должны быть в группе:")
+    # bot.register_next_step_handler(message, save_chat, chat_name)
+
+
+@bot.message_handler(func=lambda message: message.text == "Проверить добавление")
+def start_adding(message):
+    bot.send_message(message.from_user.id, "Какой чат проверить?")
+    bot.register_next_step_handler(message, continue_adding)
+
+
+def continue_adding(message):
+    if not repo.is_chat_added(message.from_user.id, message.text):
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        item = types.KeyboardButton("Проверить добавление")
+        markup.add(item)
+
+        bot.send_message(message.from_user.id, "В такой чат вы вообще не хотели меня добавить, идиот ебучий!", reply_markup=markup)
+        return
+
+    if repo.chat_cheker(message.from_user.id, message.text):
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        item = types.KeyboardButton("Проверить добавление")
+        markup.add(item)
+
+        bot.send_message(message.from_user.id, "Туда вы меня еще не добавили", reply_markup=markup)
+        return
+    bot.send_message(message.from_user.id, "Чат добавлен")
     bot.send_message(message.from_user.id, "Напишите список ФИО участников, которые должны быть в группе:")
-    bot.register_next_step_handler(message, save_chat, chat_name)
+    bot.register_next_step_handler(message, save_chat, message.text)
 
 
 def save_chat(message, chat_name):
@@ -139,7 +176,8 @@ def get_new_list(message):
 
 def change_chat_users(message, chat_name):
     if not checks.check_members(message.text):
-        logging.info(f"Смена пользователей пользователем {message.from_user.id} для чата {chat_name} отклонена в связи с неверным форматом")
+        logging.info(
+            f"Смена пользователей пользователем {message.from_user.id} для чата {chat_name} отклонена в связи с неверным форматом")
         bot.send_message(message.from_user.id, "Некорректный формат", reply_markup=start_menu())
         return
     repo.add_members(chat_name, message.from_user.id, message.text)
@@ -158,13 +196,15 @@ def checking(message):
     chat_id = repo.get_chat_by_name(message.from_user.id, message.text)
     users_to_output = job(chat_id, True)
     if users_to_output is not None:
-        bot.send_message(message.from_user.id, f"Список тех, кто еще не зашел в чат или не зарегистрировался:\n {', '.join(users_to_output)}\n\n")
+        bot.send_message(message.from_user.id,
+                         f"Список тех, кто еще не зашел в чат или не зарегистрировался:\n {', '.join(users_to_output)}\n\n")
     else:
         bot.send_message(message.from_user.id, "Все нужные пользователи уже есть в чате")
 
 
 @bot.message_handler(content_types=['new_chat_members'])
 def welcome_new_member(message):
+    print("Добавили")
     for new_member in message.new_chat_members:
         chat_id = message.chat.id
         chat_name = message.chat.title
@@ -174,6 +214,7 @@ def welcome_new_member(message):
                 repo.add_chat_to_db(chat_name, chat_id, user_id)
                 # scheduler.add_job(job, 'cron', args=[chat_id], hour=time.time() % 86400 // 3600, minute=time.time() % 3600 // 60, id=str(chat_id))
                 # scheduler.add_job(job, 'cron', args=[chat_id], hour=19, minute=10, id=str(chat_id))
+                scheduler.add_job(job, 'cron', args=[chat_id], second=0, id=str(chat_id))
 
             else:
                 bot.send_message(chat_id, f"Извините, не знаю такого чата")
@@ -196,7 +237,6 @@ def handle_user_left(message):
     bot.send_message(chat_id, random.choice(stupid_messages))
 
 
-
 def begin():
     logging.info("Бот запущен")
 
@@ -208,12 +248,20 @@ def end():
 def job(chat_id, table=False):
     expected_members = repo.get_members_by_chat(chat_id)
     current_members = repo.get_users_by_chat(chat_id)
-    needed_members = set(expected_members.copy())
+    needed_members = expected_members.copy()
 
     for user_id in current_members:
         if repo.is_user_exists(user_id):
             name = repo.get_user_name(user_id)
             if name not in expected_members:
+                if not is_bot_admin(chat_id):
+                    bot.send_message(chat_id, "Хуй")
+                    continue
+
+                if not is_user_in_chat(chat_id, user_id):
+                    bot.send_message(chat_id, "Хуй2")
+                    continue
+
                 if bot.ban_chat_member(chat_id, user_id):
                     bot.send_message(chat_id,
                                      f"Пользователь {' '.join(name)} был удален из чата, так как его нет в ожидаемом списке пользователей")
@@ -226,13 +274,32 @@ def job(chat_id, table=False):
             if time.time() - repo.get_start_time(user_id, chat_id) > 3 * 24 * 60 * 60:
                 if bot.ban_chat_member(chat_id, user_id):
                     bot.send_message(chat_id, f"Пользователь был удален из чата, так как не прошел регистрацию")
-                    logging.info(f"Пользователь {" ".join(name)} был удален из чата {chat_id}")
+                    logging.info(f"Пользователь {user_id} был удален из чата {chat_id}")
 
-        if table:
+    if table:
+        if len(needed_members) > 0:
             return [' '.join(_) for _ in needed_members]
-        else:
-            return None
+        return []
 
+
+def is_bot_admin(chat_id):
+    try:
+        administrators = bot.get_chat_administrators(chat_id)
+        for admin in administrators:
+            if admin.user.id == bot.get_me().id:
+                return True
+    except Exception as e:
+        print(f"Ошибка при проверке администраторов: {e}")
+    return False
+
+
+def is_user_in_chat(chat_id, user_id):
+    try:
+        member = bot.get_chat_member(chat_id, user_id)
+        return member.status in ['member', 'administrator', 'creator']
+    except Exception as e:
+        print(f"Ошибка при проверке участника: {e}")
+        return False
 
 
 def main():

@@ -22,12 +22,14 @@ def chat_cheker(user_id: int, chat_name: str) -> bool:
 
 
 def add_chat_to_db(chat_name: str, chat_id: int, admin_id: int) -> None:
+    print("Начал")
     connection = sq.connect('chats.db')
     cursor = connection.cursor()
     cursor.execute("DELETE FROM chats WHERE telegram_id = ?", (chat_id,))
     cursor.execute("INSERT INTO chats (telegram_id, admin_id, chat_name) VALUES (?, ?, ?)", (chat_id, admin_id, chat_name))
     connection.commit()
     cursor.execute(("DELETE FROM admins WHERE admin_id = ? AND chat_name = ?"), (admin_id, chat_name))
+    print("удалил")
     connection.commit()
     cursor.close()
     connection.close()
@@ -121,7 +123,10 @@ def get_members_by_chat(chat_id: int):
     a = cursor.execute("SELECT users_names FROM chats WHERE telegram_id = ?", (chat_id,)).fetchone()
     cursor.close()
     connection.close()
-    return set([tuple(_.split()) for _ in a[0].split(',')])
+    if a[0] is not None:
+        return set([tuple(_.split()) for _ in a[0].split(',')])
+    else:
+        return set()
 
 
 def delete_user_by_chat(user_id: int, chat_id: int):
@@ -140,3 +145,7 @@ def get_chat_by_name(admin_id: int, chat_name: str):
     cursor.close()
     connection.close()
     return a[0]
+
+
+def is_chat_added(admin_id: int, chat_name: str) -> bool:
+    pass
