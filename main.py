@@ -239,10 +239,8 @@ def welcome_new_member(message):
         if new_member.id == bot.get_me().id:
             if repo.chat_cheker(user_id, chat_name):
                 repo.add_chat_to_db(chat_name, chat_id, user_id)
-                # scheduler.add_job(job, 'cron', args=[chat_id], hour=time.time() % 86400 // 3600, minute=time.time() % 3600 // 60 - 1, id=str(chat_id))
-                # scheduler.add_job(job, 'cron', args=[chat_id], hour=19, minute=10, id=str(chat_id))
-                processes[chat_id] = scheduler.add_job(chat_users_checker_job, 'cron', args=[
-                    chat_id], second=0, id=str(chat_id)).id
+                processes[chat_id] = scheduler.add_job(chat_users_checker_job, 'cron', args=[chat_id], hour=time.time() % 86400 // 3600, minute=time.time() % 3600 // 60 - 1, id=str(chat_id)).id
+                #processes[chat_id] = scheduler.add_job(chat_users_checker_job, 'cron', args=[chat_id], second=0, id=str(chat_id)).id
 
             else:
                 bot.send_message(chat_id, f"Извините, не знаю такого чата")

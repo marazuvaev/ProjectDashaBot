@@ -24,7 +24,6 @@ def chat_cheker(user_id: int, chat_name: str) -> bool:
 
 
 def add_chat_to_db(chat_name: str, chat_id: int, admin_id: int) -> None:
-    print("Начал")
     connection = sq.connect('chats.db')
     cursor = connection.cursor()
     cursor.execute("DELETE FROM chats WHERE telegram_id = ?", (chat_id,))
@@ -33,7 +32,6 @@ def add_chat_to_db(chat_name: str, chat_id: int, admin_id: int) -> None:
     connection.commit()
     cursor.execute(
         ("DELETE FROM admins WHERE admin_id = ? AND chat_name = ?"), (admin_id, chat_name))
-    print("удалил")
     connection.commit()
     cursor.close()
     connection.close()
